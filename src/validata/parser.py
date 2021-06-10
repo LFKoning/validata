@@ -5,7 +5,7 @@ import numpy as np
 
 from validata.tokenizer import Tokenizer
 from validata.comparators import Comparator
-from validata.operators import Operator, LogicalOperator, DataOperator
+from validata.operators import Operator
 
 
 class Parser:
@@ -26,7 +26,6 @@ class Parser:
     def __init__(self, expression, name="validation_result"):
         self._log = logging.getLogger(__name__)
 
-        # TO DO: Check for duplicate names
         token_types = {op: "OPERATOR" for op in Operator.list()}
         token_types.update({comp: "COMPARATOR" for comp in Comparator.list()})
         self._tokenizer = Tokenizer(expression, token_types)
@@ -67,9 +66,7 @@ class Parser:
                 self._log.debug("Processing %s expression.", token.value)
 
                 if result is None:
-                    raise ValueError(
-                        "Use of and / or without left hand side expression."
-                    )
+                    raise ValueError("Use of AND / OR without left-hand expression.")
 
                 # Get right hand side, compute results
                 next_token = next(self._tokenizer)
@@ -248,9 +245,9 @@ class Parser:
 
         # Perform comparison and operation
         if operator:
-            if isinstance(operator, LogicalOperator):
+            if operator.type == "logical":
                 result = df[columns].pipe(comparator, target=target).pipe(operator)
-            elif isinstance(operator, DataOperator):
+            elif operator.type == "data":
                 result = df[columns].pipe(operator).pipe(comparator, target=target)
             else:
                 raise TypeError(
